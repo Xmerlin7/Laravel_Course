@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreUserRequest;
 use App\Services\UserService;
-use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
@@ -26,15 +25,9 @@ class UserController extends Controller
         return view('users.create');
     }
 
-    public function store(Request $request)
+    public function store(StoreUserRequest $request)
     {
-        $validatedData = $request->validate([
-            'name'     => 'required|min:3|max:50',
-            'email'    => 'required|email|unique:users,email',
-            'password' => 'required|min:6',
-        ]);
-
-        $this->userService->createUser($validatedData);
+        $this->userService->createUser($request->validated());
 
         return redirect('/users')->with('success', 'User created successfully!');
     }

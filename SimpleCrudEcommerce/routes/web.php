@@ -1,18 +1,37 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Route;
+
 Route::get('/', function () {
-    return view('welcome');
+    if (!auth()->check()) {
+        return redirect()->route('login');
+    }
+
+    return auth()->user()?->role === 'admin'
+        ? redirect('/users')
+        : redirect('/products');
 });
-Route::get('/products', [ProductController::class, 'index']);
 
-// 1. صفحة الجدول (لعرض كل الناس)
-Route::get('/users', [UserController::class, 'index']);
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [AuthController::class, 'login'])->name('login.store');
+});
 
-// 2. صفحة الفورم (عشان تكتب البيانات)
-Route::get('/users/create', [UserController::class, 'create']);
+Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
-// 3. الأكشن اللي بيخزن (محدش بيشوفه، ده "مواسير" بس)
-Route::post('/users/store', [UserController::class, 'store']);
+Route::get('/products', [ProductController::class, 'index'])->middleware('auth');
+
+Route::get('/orders', [OrderController::class, 'index']);
+Route::get('/orders/{order}', [OrderController::class, 'show']);
+Route::post('/orders', [OrderController::class, 'store']);
+Route::post('/orders/{order}/items', [OrderController::class, 'addItem']);
+
+Route::middleware(['auth', 'admin'])->prefix('users')->group(function () {
+    Route::get('/', [UserController::class, 'index']);
+    Route::get('/create', [UserController::class, 'create']);
+    Route::post('/store', [UserController::class, 'store']);
+});
