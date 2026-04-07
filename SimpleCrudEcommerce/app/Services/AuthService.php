@@ -21,4 +21,24 @@ class AuthService
             'token' => $token
         ];
     }
+    public function login(array $data)
+    {
+        $user = User::where('email', $data['email'])->first();
+
+        if (!$user || !Hash::check($data['password'], $user->password)) {
+            return ["message"=> "Wrong Credentials"];
+        }
+
+        $token = $user->createToken('access_token')->plainTextToken;
+
+        return [
+            'user' => $user,
+            'token' => $token
+        ];
+    }
+
+    public function logout($user)
+    {
+        return $user->currentAccessToken()->delete();
+    }
 }

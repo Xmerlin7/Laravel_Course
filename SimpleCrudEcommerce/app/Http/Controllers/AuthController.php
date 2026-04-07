@@ -45,6 +45,7 @@ class AuthController extends Controller
     public function __construct(AuthService $authService){
         $this->authService = $authService;
     }
+
     public function register(Request $request){
         $userData = $request->validate([
             'name'=> 'required | string | min:3',
@@ -53,5 +54,23 @@ class AuthController extends Controller
         ]);
         $result = $this->authService->register($userData);
         return response()->json($result, 201);
+    }
+    public function login(Request $request)
+    {
+        $data = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+
+        $result = $this->authService->login($data);
+
+        return response()->json($result, 200);
+    }
+
+    public function logout(Request $request)
+    {
+        $this->authService->logout($request->user());
+
+        return response()->json(['message' => 'Logged Out Successfully!!'], 200);
     }
 }
