@@ -1,9 +1,9 @@
 <?php
 
 namespace App\Http\Controllers;
-namespace App\Http\Controllers\Api;
 
 use App\Http\Requests\LoginRequest;
+use App\Services\AuthService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -41,5 +41,17 @@ class AuthController extends Controller
 
     //     return redirect()->route('login');
     // }
-
+    protected $authService;
+    public function __construct(AuthService $authService){
+        $this->authService = $authService;
+    }
+    public function register(Request $request){
+        $userData = $request->validate([
+            'name'=> 'required | string | min:3',
+            'email' => " required | email | string | unique:users",
+            'password' => 'required|string|min:6',
+        ]);
+        $result = $this->authService->register($userData);
+        return response()->json($result, 201);
+    }
 }

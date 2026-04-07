@@ -9,7 +9,16 @@ use Illuminate\Validation\ValidationException;
 class AuthService
 {
 
-    public function login(){
-
+    public function register(array $data){
+        $user = User::create([
+            'name' => $data['name'],
+            'email'=> $data['email'],
+            'password' => Hash::make($data['password'])
+        ]);
+        $token = $user->createToken('access_token')->plainTextToken;
+        return [
+            'user' => $user,
+            'token' => $token
+        ];
     }
 }
